@@ -1,8 +1,11 @@
 package com.example.sisucon.homework;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.SharedElementCallback;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,7 +96,29 @@ public class ChooseAreaFragment extends Fragment {
         listView = (ListView) view.findViewById(R.id.list_view);
         adapter = new ArrayAdapter(getContext(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
+        view.setFocusable(true);
+        view.setFocusableInTouchMode(true);
+        view.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK)
+                {
+                    if (currentLevel == LEVEL_COUNTY) {
+                        queryCities();
+                    } else if (currentLevel == LEVEL_CITY) {
+                        queryProvinces();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
         return view;
+    }
+
+    @Override
+    public void setEnterSharedElementCallback(SharedElementCallback callback) {
+        super.setEnterSharedElementCallback(callback);
     }
 
     @Override
@@ -107,8 +132,14 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     queryProvinces();
                 }
+                else if(currentLevel == LEVEL_PROVINCE)
+                {
+
+                }
             }
         });
+
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -285,5 +316,14 @@ public class ChooseAreaFragment extends Fragment {
             progressDialog.dismiss();
         }
     }
+
+public void backLastView()
+{
+    if (currentLevel == LEVEL_COUNTY) {
+        queryCities();
+    } else if (currentLevel == LEVEL_CITY) {
+        queryProvinces();
+    }
+}
 
 }
