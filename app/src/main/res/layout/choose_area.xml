@@ -12,15 +12,22 @@
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary">
 
+        <Button
+            android:id="@+id/back_button"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignBottom="@+id/title_text"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="24dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/ic_back" />
+
         <TextView
             android:id="@+id/title_text"
-            android:layout_width="124dp"
-            android:layout_height="41dp"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="126dp"
-            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
             android:autoSizeMaxTextSize="70px"
             android:autoSizeMinTextSize="50px"
             android:text="sisucon"
@@ -28,15 +35,7 @@
             android:textColor="#fff"
             android:textSize="30sp" />
 
-        <Button
-            android:id="@+id/back_button"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="318dp"
-            android:background="@drawable/ic_back" />
+
 
     </RelativeLayout>
 
