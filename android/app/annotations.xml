@@ -1,0 +1,5 @@
+<root>
+    <item name='android.app.Activity boolean onKeyUp(int, android.view.KeyEvent)'>
+        <annotation name='java.lang.Deprecated' />
+    </item>
+</root>
