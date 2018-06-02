@@ -83,18 +83,13 @@ public class WeatherActivity extends AppCompatActivity {
         sportText = (TextView) findViewById(R.id.sport_text);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
-        if (weatherString != null) {
-            // 有缓存时直接解析天气数据
-            Weather weather = Utility.handleWeatherResponse(weatherString);
-            mWeatherId = weather.basic.weatherId;
-            showWeatherInfo(weather);
-        } else {
+
             // 无缓存时去服务器查询天气
             mWeatherId = getIntent().getStringExtra("weather_id");
-            System.out.println(mWeatherId);
+            System.out.println("mWeatherId2   " + mWeatherId);
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(mWeatherId);
-        }
+
 
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
