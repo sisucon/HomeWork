@@ -30,13 +30,14 @@
 
         <Button
             android:id="@+id/back_button"
-            android:layout_width="37dp"
-            android:layout_height="26dp"
-            android:layout_alignBaseline="@+id/title_text"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="336dp"
-            android:background="@drawable/back" />
+            android:layout_marginRight="318dp"
+            android:background="@drawable/ic_back" />
+
     </RelativeLayout>
 
     <ListView

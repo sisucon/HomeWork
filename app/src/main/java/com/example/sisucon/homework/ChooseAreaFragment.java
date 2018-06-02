@@ -134,7 +134,7 @@ public class ChooseAreaFragment extends Fragment {
                 }
                 else if(currentLevel == LEVEL_PROVINCE)
                 {
-
+                getActivity().finish();
                 }
             }
         });
@@ -154,13 +154,21 @@ public class ChooseAreaFragment extends Fragment {
                 }
                 else
                 {
-                    Intent intent = new Intent();
-                    System.out.println("position "+ position);
-                    weaterCode = countyList.get(position).getWeatherID();
-                    intent.setClass(getContext(),WeatherActivity.class);
-                    intent.putExtra("weather_id",weaterCode);
-                    System.out.println("weather" + weaterCode);
-                    startActivity(intent);
+                    if (getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent();
+                        System.out.println("position "+ position);
+                        weaterCode = countyList.get(position).getWeatherID();
+                        intent.setClass(getContext(),WeatherActivity.class);
+                        intent.putExtra("weather_id",weaterCode);
+                        System.out.println("weather" + weaterCode);
+                        startActivity(intent);
+                    } else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        weaterCode = countyList.get(position).getWeatherID();
+                        activity.requestWeather(weaterCode);
+                    }
                 }
             }
         });

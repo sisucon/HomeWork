@@ -1,12 +1,16 @@
 package com.example.sisucon.homework;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,6 +22,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.sisucon.homework.gson.Forecast;
 import com.example.sisucon.homework.gson.Weather;
+import com.example.sisucon.homework.service.AutoUpdateService;
 import com.example.sisucon.homework.util.Utility;
 import com.example.sisucon.homework.util.Utils;
 
@@ -54,7 +59,7 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView sportText;
 
     private String mWeatherId;
-
+    public DrawerLayout drawerLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +73,8 @@ public class WeatherActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_weather);
         // 初始化各控件
+        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        drawerLayout.setAlpha((float)0.75);
         swipeRefresh = (SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
         bingPicImg = (ImageView)findViewById(R.id.bing_pic_img);
         weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
@@ -95,7 +102,6 @@ public class WeatherActivity extends AppCompatActivity {
 
             }
         });
-
 
     }
 
@@ -165,6 +171,8 @@ public class WeatherActivity extends AppCompatActivity {
      * 处理并展示Weather实体类中的数据。
      */
     private void showWeatherInfo(Weather weather) {
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
         String cityName = weather.basic.cityName;
         String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "℃";
