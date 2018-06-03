@@ -142,10 +142,18 @@ public class WeatherActivity extends AppCompatActivity {
         String cityName = getCity(this);
         cityName = cityName.split("市")[0];
         System.out.println(cityName);
-        if (DataSupport.findAll(Country.class).size()>0)
-        {
-            requestWeather(DataSupport.where("countryName = ?",cityName).find(Country.class).get(0).getWeatherID());
-        }
+
+           if (DataSupport.where("countryName = ?",cityName).find(Country.class).size()>0)
+           {
+               String weatherid = DataSupport.where("countryName = ?",cityName).find(Country.class).get(0).getWeatherID();
+               requestWeather(weatherid);
+           }
+           else
+           {
+               Toast.makeText(this, "您没有您现在所在位置的信息,请手动选择一次", Toast.LENGTH_SHORT).show();
+               drawerLayout.openDrawer(GravityCompat.START);
+           }
+
     }
 
 
@@ -181,7 +189,6 @@ public class WeatherActivity extends AppCompatActivity {
         {
             List<Address> result = null;
           result  = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
-
             System.out.println(result.get(0).getLocality());
           return  result.get(0).getLocality();
         }catch (Exception e)
@@ -291,4 +298,6 @@ public class WeatherActivity extends AppCompatActivity {
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
     }
+
+
 }
