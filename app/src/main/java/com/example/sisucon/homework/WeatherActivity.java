@@ -1,17 +1,25 @@
 package com.example.sisucon.homework;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Criteria;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -27,8 +35,14 @@ import com.example.sisucon.homework.gson.Weather;
 import com.example.sisucon.homework.service.AutoUpdateService;
 import com.example.sisucon.homework.util.Utility;
 import com.example.sisucon.homework.util.Utils;
+import com.example.sisucon.homework.weatherDB.Country;
+
+import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -64,6 +78,7 @@ public class WeatherActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
 
     private Button navButton;
+    private Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +92,17 @@ public class WeatherActivity extends AppCompatActivity {
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         setContentView(R.layout.activity_weather);
+        if (Build.VERSION.SDK_INT >= 23) {
+            int REQUEST_CODE_CONTACT = 101;
+            String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION};
+            //验证是否许可权限
+            for (String str : permissions) {
+                if (this.checkSelfPermission(str) != PackageManager.PERMISSION_GRANTED) {
+                    //申请权限
+                    this.requestPermissions(permissions, REQUEST_CODE_CONTACT);
+                }
+            }
+        }
         // 初始化各控件
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerLayout.setAlpha((float)0.75);
@@ -93,19 +119,13 @@ public class WeatherActivity extends AppCompatActivity {
         comfortText = (TextView) findViewById(R.id.comfort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
-            // 无缓存时去服务器查询天气
-            mWeatherId = getIntent().getStringExtra("weather_id");
-            System.out.println(mWeatherId);
             weatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(mWeatherId);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 requestWeather(mWeatherId);
-
             }
         });
         navButton = (Button) findViewById(R.id.nav_button);
@@ -117,9 +137,59 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
 
-
+        getLocation();
+        List<String> countyList = new ArrayList<>();
+        String cityName = getCity(this);
+        cityName = cityName.split("市")[0];
+        System.out.println(cityName);
+        if (DataSupport.findAll(Country.class).size()>0)
+        {
+            requestWeather(DataSupport.where("countryName = ?",cityName).find(Country.class).get(0).getWeatherID());
+        }
     }
 
+
+    public void getLocation() {
+        String locationProvider;
+        //获取地理位置管理器
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        //获取所有可用的位置提供器
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);//低精度，如果设置为高精度，依然获取不了location。
+        criteria.setAltitudeRequired(false);//不要求海拔
+        criteria.setBearingRequired(false);//不要求方位
+        criteria.setCostAllowed(true);//允许有花费
+        criteria.setPowerRequirement(Criteria.POWER_LOW);//低功耗
+        locationProvider = locationManager.getBestProvider(criteria, true);
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("pass", "onCreate: 没有权限 ");
+            return;
+        }
+        location = locationManager.getLastKnownLocation(locationProvider);
+        if (location != null) {
+            //不为空,显示地理位置经纬度
+            String locationStr = "纬度：" + location.getLatitude() + "\n" + "经度：" + location.getLongitude();
+            System.out.println(locationStr);
+        }
+        //监视地理位置变化
+    }
+
+    public String getCity(Context context)
+    {
+        Geocoder geocoder = new Geocoder(context);
+        try
+        {
+            List<Address> result = null;
+          result  = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
+
+            System.out.println(result.get(0).getLocality());
+          return  result.get(0).getLocality();
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
     /**
      * 根据天气id请求城市天气信息。
      */
