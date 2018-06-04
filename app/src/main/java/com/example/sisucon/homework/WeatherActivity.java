@@ -84,7 +84,6 @@ public class WeatherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         loadBingPic();
-
         if (Build.VERSION.SDK_INT >= 21) {
             View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -140,20 +139,22 @@ public class WeatherActivity extends AppCompatActivity {
         getLocation();
         List<String> countyList = new ArrayList<>();
         String cityName = getCity(this);
-        cityName = cityName.split("市")[0];
-        System.out.println(cityName);
+        if (cityName!=null)
+        {
+            cityName = cityName.split("市")[0];
+            System.out.println(cityName);
 
-           if (DataSupport.where("countryName = ?",cityName).find(Country.class).size()>0)
-           {
-               String weatherid = DataSupport.where("countryName = ?",cityName).find(Country.class).get(0).getWeatherID();
-               requestWeather(weatherid);
-           }
-           else
-           {
-               Toast.makeText(this, "您没有您现在所在位置的信息,请手动选择一次", Toast.LENGTH_SHORT).show();
-               drawerLayout.openDrawer(GravityCompat.START);
-           }
-
+            if (DataSupport.where("countryName = ?",cityName).find(Country.class).size()>0)
+            {
+                String weatherid = DataSupport.where("countryName = ?",cityName).find(Country.class).get(0).getWeatherID();
+                requestWeather(weatherid);
+            }
+            else
+            {
+                Toast.makeText(this, "您没有您现在所在位置的信息,请手动选择一次", Toast.LENGTH_SHORT).show();
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        }
     }
 
 
@@ -169,6 +170,7 @@ public class WeatherActivity extends AppCompatActivity {
         criteria.setCostAllowed(true);//允许有花费
         criteria.setPowerRequirement(Criteria.POWER_LOW);//低功耗
         locationProvider = locationManager.getBestProvider(criteria, true);
+        System.out.println("locationProvider = " + locationProvider);
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d("pass", "onCreate: 没有权限 ");
             return;
@@ -179,6 +181,22 @@ public class WeatherActivity extends AppCompatActivity {
             String locationStr = "纬度：" + location.getLatitude() + "\n" + "经度：" + location.getLongitude();
             System.out.println(locationStr);
         }
+        else
+        {
+            List<String> providers = locationManager.getProviders(true);
+            if (providers.contains(LocationManager.GPS_PROVIDER)) {
+                //如果是GPS
+                locationProvider = LocationManager.GPS_PROVIDER;
+            } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
+                //如果是Network
+                locationProvider = LocationManager.NETWORK_PROVIDER;
+            } else {
+                Toast.makeText(this, "没有可用的位置提供器", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            //获取Location
+            location = locationManager.getLastKnownLocation(locationProvider);
+        }
         //监视地理位置变化
     }
 
@@ -187,10 +205,19 @@ public class WeatherActivity extends AppCompatActivity {
         Geocoder geocoder = new Geocoder(context);
         try
         {
-            List<Address> result = null;
-          result  = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
-            System.out.println(result.get(0).getLocality());
-          return  result.get(0).getLocality();
+           if (location!=null)
+           {
+               List<Address> result = null;
+               System.out.println(geocoder);
+               result  = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
+               System.out.println(result.get(0).getLocality());
+               return result.get(0).getLocality();
+           }
+           else
+           {
+                Toast.makeText(this,"您的api过低",Toast.LENGTH_SHORT);
+                return null;
+           }
         }catch (Exception e)
         {
             e.printStackTrace();
