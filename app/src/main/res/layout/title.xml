@@ -35,4 +35,16 @@
         android:textSize="16sp"
         tools:text="update_time" />
 
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/title_update_time"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="0dp"
+        android:textColor="#fff"
+        android:checked="true"
+        android:text="后台更新" />
+
 </RelativeLayout>

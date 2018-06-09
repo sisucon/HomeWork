@@ -11,6 +11,7 @@ import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -21,8 +22,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -53,7 +58,7 @@ public class WeatherActivity extends AppCompatActivity {
     private final static String MY_KEY = "edf6fa4ca78f4c89b4b187e23e99e674";
     private ImageView bingPicImg;
     private ScrollView weatherLayout;
-
+    private ImageView weatherImg;
     private TextView titleCity;
 
     private TextView titleUpdateTime;
@@ -76,10 +81,10 @@ public class WeatherActivity extends AppCompatActivity {
 
     private String mWeatherId;
     public DrawerLayout drawerLayout;
-
+    private CheckBox checkBox;
     private Button navButton;
     private Location location;
-
+    private Boolean isCheck = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +109,8 @@ public class WeatherActivity extends AppCompatActivity {
             }
         }
         // 初始化各控件
+        weatherImg = (ImageView)findViewById(R.id.weatherImg);
+        checkBox = (CheckBox)findViewById(R.id.checkBox);
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         drawerLayout.setAlpha((float)0.75);
         swipeRefresh = (SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
@@ -137,6 +144,25 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
 
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    isCheck = isChecked;
+                if (isCheck)
+                {
+                    Toast.makeText(WeatherActivity.this,"您允许了后台更新数据",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(WeatherActivity.this, AutoUpdateService.class);
+                    startService(intent);
+                }
+                else
+                {
+                    Toast.makeText(WeatherActivity.this,"您取消了后台更新数据",Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(WeatherActivity.this, AutoUpdateService.class);
+                    stopService(intent);
+                }
+            }
+        });
+
         getLocation();
         List<String> countyList = new ArrayList<>();
         String cityName = getCity(this);
@@ -147,6 +173,29 @@ public class WeatherActivity extends AppCompatActivity {
             requestWeather(DataSupport.where("countryName = ?",cityName).find(Country.class).get(0).getWeatherID());
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
 
     public void getLocation() {
@@ -252,16 +301,26 @@ public class WeatherActivity extends AppCompatActivity {
         });
     }
 
+
+
     /**
      * 处理并展示Weather实体类中的数据。
      */
     private void showWeatherInfo(Weather weather) {
-        Intent intent = new Intent(this, AutoUpdateService.class);
-        startService(intent);
+
+
         String cityName = weather.basic.cityName;
         String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "℃";
         String weatherInfo = weather.now.more.info;
+        String weatherNum = weather.now.more.weatherCode;
+        String imgUrl = "https://cdn.heweather.com/cond_icon/"+weatherNum+".png";
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Glide.with(WeatherActivity.this).load(imgUrl).into(weatherImg);
+            }
+        });
         titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
