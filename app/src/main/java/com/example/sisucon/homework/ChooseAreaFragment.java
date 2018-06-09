@@ -1,8 +1,6 @@
 package com.example.sisucon.homework;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.SharedElementCallback;
 import android.view.KeyEvent;
@@ -103,10 +101,15 @@ public class ChooseAreaFragment extends Fragment {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK)
                 {
-                    if (currentLevel == LEVEL_COUNTY) {
-                        queryCities();
-                    } else if (currentLevel == LEVEL_CITY) {
+                    if (currentLevel == LEVEL_CITY) {
+                        System.out.println("currentLevel = " + currentLevel);
                         queryProvinces();
+                        return true;
+                    }
+                    else if (currentLevel == LEVEL_COUNTY) {
+                        System.out.println("currentLevel = " + currentLevel);
+                        queryCities();
+                        return true;
                     }
                     return true;
                 }
